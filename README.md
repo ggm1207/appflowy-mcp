@@ -6,6 +6,36 @@ An [MCP](https://modelcontextprotocol.io) server for **self-hosted AppFlowy Clou
 It lets Claude (or any MCP client) create, read, update, organize and search
 AppFlowy pages by talking directly to the AppFlowy Cloud REST API.
 
+## Quick start — let your AI agent install it
+
+Don't install it by hand. Paste the block below to your coding agent
+(Claude Code, Cursor, Windsurf, …). It contains everything the agent needs to
+clone, configure, and register the server — it will ask you for your AppFlowy
+URL and credentials along the way.
+
+````text
+Set up the AppFlowy MCP server for me.
+
+1. Clone https://github.com/ggm1207/appflowy-mcp and cd into it.
+2. Run `uv sync`.
+3. Copy `.env.example` to `.env`. Ask me for my AppFlowy Cloud base URL,
+   GoTrue URL, email, and password, then fill them in. Never echo my
+   password back to me.
+4. Register the server with Claude Code:
+   `claude mcp add appflowy -- uv --directory "$(pwd)" run appflowy-mcp`
+5. Verify it works by calling the `list_workspaces` tool and showing me my
+   workspaces.
+
+Requirements & rules:
+- Python 3.12+ and `uv` must be installed.
+- A self-hosted AppFlowy Cloud must already be running and I must have an
+  account on it.
+- `.env` holds secrets — confirm it is gitignored and never commit it.
+````
+
+Prefer to do it yourself? See [Setup](#setup) and
+[Register with Claude Code](#register-with-claude-code) below.
+
 ## Why
 
 AppFlowy desktop stores notes as RocksDB/collab binaries that an AI can't read
@@ -60,6 +90,49 @@ code, quote, divider, and paragraphs, plus inline **bold** / *italic* / `code` /
 
 Not supported (documented limitation): underline, tables, images, and nested lists
 (nested list items are flattened).
+
+## Usage examples
+
+Once the server is registered, just talk to your agent in plain language — it
+picks the right tool for you:
+
+| You say | Tool used |
+|---|---|
+| "List my AppFlowy workspaces" | `list_workspaces` |
+| "Show me the page tree in my workspace" | `get_folder` |
+| "Create a page 'Meeting Notes' under General with this agenda: …" | `create_page` |
+| "Append today's standup notes to the Meeting Notes page" | `append_markdown` |
+| "Rename that page to 'Q3 Planning'" | `update_page` |
+| "Move the Drafts page under Archive" | `move_page` |
+| "Favorite the roadmap page" | `favorite_page` |
+| "Trash the old scratch page" | `trash_page` |
+| "Search my workspace for 'authentication design'" | `search_workspace` |
+
+### Example — turn a conversation into a structured note
+
+> "Summarize our conversation and save it as a new AppFlowy page under General
+> titled **API design decisions**, with a heading per decision and a checklist
+> of follow-ups."
+
+The agent writes a markdown summary (headings, bullet/todo lists, bold, links),
+the server converts it to AppFlowy blocks, and `create_page` produces the page
+in one shot (create-then-append).
+
+### Example — append to a running journal
+
+> "Add a new section to my **Journal** page: today's date as a heading, then
+> three bullet points of what I worked on."
+
+The agent calls `append_markdown` against the existing page's `view_id`, so the
+new section is added without touching what's already there.
+
+### Example — tidy up the workspace
+
+> "Find my old draft pages, move the finished ones under **Archive**, and trash
+> the empty ones."
+
+The agent reads the tree with `get_folder`, then orchestrates `move_page` and
+`trash_page` per page — review the proposed actions before confirming.
 
 ## Requirements
 

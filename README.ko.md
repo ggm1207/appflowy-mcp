@@ -6,6 +6,32 @@
 Claude(또는 임의의 MCP 클라이언트)가 AppFlowy Cloud REST API와 직접 통신하여
 AppFlowy 페이지를 만들고, 읽고, 수정하고, 정리하고, 검색할 수 있게 해줍니다.
 
+## 빠른 시작 — AI 에이전트에게 설치를 맡기세요
+
+직접 손으로 설치하지 마세요. 아래 블록을 당신의 코딩 에이전트(Claude Code,
+Cursor, Windsurf 등)에게 그대로 넘기면 됩니다. 클론·설정·등록에 필요한 모든
+내용이 들어 있고, 진행 도중 에이전트가 AppFlowy URL과 자격 증명을 물어봅니다.
+
+````text
+AppFlowy MCP 서버를 설치해줘.
+
+1. https://github.com/ggm1207/appflowy-mcp 를 클론하고 그 디렉터리로 이동해.
+2. `uv sync` 실행.
+3. `.env.example`을 `.env`로 복사해. 내 AppFlowy Cloud base URL, GoTrue URL,
+   이메일, 비밀번호를 나에게 물어본 뒤 채워넣어. 내 비밀번호를 다시 출력하지 마.
+4. Claude Code에 서버 등록:
+   `claude mcp add appflowy -- uv --directory "$(pwd)" run appflowy-mcp`
+5. `list_workspaces` 도구를 호출해서 내 워크스페이스 목록을 보여주며 동작 확인.
+
+요구 사항 & 규칙:
+- Python 3.12+ 와 `uv`가 설치돼 있어야 함.
+- self-hosted AppFlowy Cloud가 이미 실행 중이어야 하고, 거기에 내 계정이 있어야 함.
+- `.env`에는 비밀 값이 들어감 — gitignore 되는지 확인하고 절대 커밋하지 마.
+````
+
+직접 설치하고 싶다면 아래 [설정](#설정)과
+[Claude Code에 등록](#claude-code에-등록) 섹션을 참고하세요.
+
 ## 왜 만들었나
 
 AppFlowy 데스크톱은 노트를 RocksDB/collab 바이너리로 저장하기 때문에 AI가 직접
@@ -58,6 +84,48 @@ AI가 페이지를 바로 다룰 수 있습니다.
 구분선, 문단, 그리고 인라인 **굵게** / *기울임* / `코드` / [링크](#) / ~~취소선~~.
 
 미지원(알려진 제약): 밑줄, 표, 이미지, 중첩 목록(중첩된 목록 항목은 평탄화됩니다).
+
+## 사용 사례
+
+서버가 등록되고 나면, 에이전트에게 평범한 말로 부탁하면 됩니다 — 알맞은 도구를
+알아서 골라줍니다:
+
+| 이렇게 말하면 | 사용되는 도구 |
+|---|---|
+| "내 AppFlowy 워크스페이스 목록 보여줘" | `list_workspaces` |
+| "워크스페이스의 페이지 트리 보여줘" | `get_folder` |
+| "General 아래에 이 안건으로 '회의록' 페이지 만들어줘: …" | `create_page` |
+| "오늘 스탠드업 노트를 회의록 페이지에 추가해줘" | `append_markdown` |
+| "그 페이지 이름을 'Q3 기획'으로 바꿔줘" | `update_page` |
+| "Drafts 페이지를 Archive 아래로 옮겨줘" | `move_page` |
+| "로드맵 페이지를 즐겨찾기 해줘" | `favorite_page` |
+| "오래된 임시 페이지를 휴지통으로 보내줘" | `trash_page` |
+| "워크스페이스에서 'authentication design' 검색해줘" | `search_workspace` |
+
+### 예시 — 대화를 구조화된 노트로 저장
+
+> "우리 대화를 요약해서 General 아래에 **API 설계 결정**이라는 새 AppFlowy
+> 페이지로 저장해줘. 결정마다 헤딩을 달고, 후속 작업은 체크리스트로 정리해줘."
+
+에이전트가 마크다운 요약(헤딩, 불릿/할 일 목록, 굵게, 링크)을 작성하면 서버가
+이를 AppFlowy 블록으로 변환하고, `create_page`가 한 번에 페이지를 만듭니다
+(create-then-append).
+
+### 예시 — 진행 중인 일지에 이어쓰기
+
+> "내 **일지** 페이지에 새 섹션을 추가해줘: 오늘 날짜를 헤딩으로, 그 아래 오늘 한
+> 일 3가지를 불릿으로."
+
+에이전트가 기존 페이지의 `view_id`에 대해 `append_markdown`을 호출하므로, 기존
+내용은 건드리지 않고 새 섹션만 덧붙습니다.
+
+### 예시 — 워크스페이스 정리
+
+> "오래된 초안 페이지들을 찾아서, 완성된 건 **Archive** 아래로 옮기고, 빈 건
+> 휴지통으로 보내줘."
+
+에이전트가 `get_folder`로 트리를 읽은 뒤 페이지마다 `move_page`와 `trash_page`를
+조율합니다 — 제안된 작업을 확인한 뒤 승인하세요.
 
 ## 요구 사항
 
