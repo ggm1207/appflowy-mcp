@@ -1,0 +1,48 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-07-09/server.schema.json",
+  "name": "io.github.ggm1207/appflowy-mcp",
+  "description": "MCP server for self-hosted AppFlowy Cloud — create, read, update, organize and search pages via the Cloud REST API.",
+  "repository": {
+    "url": "https://github.com/ggm1207/appflowy-mcp",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registry_type": "pypi",
+      "identifier": "appflowy-mcp",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environment_variables": [
+        {
+          "name": "APPFLOWY_BASE_URL",
+          "description": "AppFlowy Cloud API base URL (e.g. http://localhost behind nginx, or http://localhost:8000).",
+          "is_required": true
+        },
+        {
+          "name": "APPFLOWY_GOTRUE_URL",
+          "description": "GoTrue auth base URL (e.g. http://localhost/gotrue, or http://localhost:9999).",
+          "is_required": true
+        },
+        {
+          "name": "APPFLOWY_EMAIL",
+          "description": "Account email used for the GoTrue password grant.",
+          "is_required": true
+        },
+        {
+          "name": "APPFLOWY_PASSWORD",
+          "description": "Account password used for the GoTrue password grant.",
+          "is_required": true,
+          "is_secret": true
+        },
+        {
+          "name": "APPFLOWY_WORKSPACE_ID",
+          "description": "Optional default workspace id; defaults to the first workspace on the account.",
+          "is_required": false
+        }
+      ]
+    }
+  ]
+}
