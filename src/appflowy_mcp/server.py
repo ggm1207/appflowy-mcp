@@ -21,6 +21,7 @@ import os
 from dataclasses import dataclass
 
 import httpx
+from dotenv import load_dotenv
 from mcp.server.stdio import stdio_server
 
 from .auth import TokenStore
@@ -52,7 +53,11 @@ def load_config() -> Config:
     Only the *presence* of required variables is validated here — no network
     call is made — so a misconfigured environment is reported immediately while
     a fully-configured one defers actual sign-in until the first tool call.
+
+    A ``.env`` file in the working directory is loaded if present; real
+    environment variables take precedence (``load_dotenv`` does not override).
     """
+    load_dotenv()
     missing = [name for name in _REQUIRED_ENV if not os.environ.get(name)]
     if missing:
         raise RuntimeError(
